@@ -679,7 +679,7 @@ export class PhysicsWorld {
       if (record.fellOff) {
         continue;
       }
-      if (!this.isInsideTable(record.body.position, level)) {
+      if (!this.isBodyInsideTable(record.body, record.def.shape, level)) {
         record.fellOff = true;
         this.pendingEvents.push({ type: 'fell-off', dishId });
       }
@@ -867,6 +867,36 @@ export class PhysicsWorld {
       point.y >= top.y &&
       point.y <= top.y + top.height
     );
+  }
+
+  private isBodyInsideTable(body: Matter.Body, shape: Shape, level: LevelDefinition): boolean {
+    if (shape.type === 'circle') {
+      return (
+        body.position.x - shape.radius >= level.table.top.x &&
+        body.position.x + shape.radius <= level.table.top.x + level.table.top.width &&
+        body.position.y - shape.radius >= level.table.top.y &&
+        body.position.y + shape.radius <= level.table.top.y + level.table.top.height
+      );
+    }
+
+    const cos = Math.cos(body.angle);
+    const sin = Math.sin(body.angle);
+    const halfWidth = shape.width / 2;
+    const halfHeight = shape.height / 2;
+    const corners: readonly Vec2[] = [
+      { x: -halfWidth, y: -halfHeight },
+      { x: halfWidth, y: -halfHeight },
+      { x: halfWidth, y: halfHeight },
+      { x: -halfWidth, y: halfHeight },
+    ];
+
+    return corners.every((corner) => {
+      const point = {
+        x: body.position.x + corner.x * cos - corner.y * sin,
+        y: body.position.y + corner.x * sin + corner.y * cos,
+      };
+      return this.isInsideTable(point, level);
+    });
   }
 
   /** Air friction at a point using zone geometry only (for trajectory preview). */

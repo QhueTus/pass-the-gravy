@@ -136,7 +136,6 @@ interface TextOptions {
 interface PreviousFrame {
   readonly levelIndex: number;
   readonly phase: GamePhase;
-  readonly dishesRemaining: number;
   readonly tugsRemaining: number;
   readonly deliveredIds: ReadonlySet<EntityId>;
   readonly dishPositions: ReadonlyMap<EntityId, Vec2>;
@@ -236,7 +235,6 @@ export class CanvasRenderer implements Renderer {
       previous === null ||
       previous.levelIndex !== state.levelIndex ||
       (idle(previous.phase) && state.phase === 'aiming') ||
-      state.dishesRemaining > previous.dishesRemaining ||
       state.tugsRemaining > previous.tugsRemaining ||
       state.deliveredTargetIds.length < previous.deliveredIds.size;
 
@@ -266,7 +264,6 @@ export class CanvasRenderer implements Renderer {
     this.previous = {
       levelIndex: state.levelIndex,
       phase: state.phase,
-      dishesRemaining: state.dishesRemaining,
       tugsRemaining: state.tugsRemaining,
       deliveredIds: new Set<EntityId>(state.deliveredTargetIds),
       dishPositions,
